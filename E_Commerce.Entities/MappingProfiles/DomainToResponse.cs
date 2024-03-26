@@ -18,6 +18,11 @@ namespace E_Commerce.Entities.MappingProfiles
         {
             #region Item
             CreateMap<Item, CreateItemResponseDto>();
+            CreateMap<Item, GetItemsResponseDto>()
+                  .ForMember(dest => dest.FinalPrice, opt => opt.MapFrom(src => src.FinalPrice))
+                  .ForMember(dest => dest.CategoriesIds, opt => opt.MapFrom(src => src.Categories.Select(c => c.Id))
+                ).ReverseMap();
+         
             #endregion
 
             #region Category

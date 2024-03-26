@@ -40,7 +40,7 @@ namespace E_Commerce.Api.Controllers
                 return Unauthorized("You must be logged in to perform this action.");
             }
 
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.FindByNameAsync(userId);
             if (user == null)
             {
                 return Unauthorized("You must be logged in to perform this action.");

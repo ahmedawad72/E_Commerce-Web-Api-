@@ -26,7 +26,7 @@ namespace E_Commerce.Api.Controllers
         }
 
 
-        [Authorize(Roles = "User , Admin")]
+   //     [Authorize(Roles = "User , Admin")]
         [HttpGet]
         [Route("GetAll")]
         public async Task<IActionResult> GetAll()
@@ -44,7 +44,7 @@ namespace E_Commerce.Api.Controllers
    
         
         
-        [Authorize(Roles = "User , Admin")]
+    //    [Authorize(Roles = "User , Admin")]
         [HttpGet]
         [Route("{id}")]
         public async Task<IActionResult> GetById( Guid id)
@@ -60,7 +60,7 @@ namespace E_Commerce.Api.Controllers
 
 
 
-        [Authorize(Roles = "Admin")]
+    //    [Authorize(Roles = "Admin")]
         [HttpPost]
         [Route("Add")]
         public async Task<IActionResult> Add(CreateCategoryRequestDto categoryDto)
@@ -88,7 +88,7 @@ namespace E_Commerce.Api.Controllers
 
 
 
-        [Authorize(Roles = "Admin")]
+    //    [Authorize(Roles = "Admin")]
         [HttpPut]
         public async Task<IActionResult> Update(CreateCategoryRequestDto categoryDto)
         {
@@ -116,7 +116,7 @@ namespace E_Commerce.Api.Controllers
         
         
         
-        [Authorize(Roles = "Admin")]
+    //    [Authorize(Roles = "Admin")]
         [HttpDelete("DeleteCategory/{Id}")]
         public async Task<IActionResult> DeleteCategory(Guid Id)
         {

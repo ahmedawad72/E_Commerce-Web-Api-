@@ -33,42 +33,41 @@ namespace E_Commerce.Api.Controllers
         }
 
 
-        [Authorize(Roles = "User , Admin")]
+      //  [Authorize(Roles = "User , Admin")]
         [HttpGet]
-        [Route("GetAll")]
         public async Task<IActionResult> GetAllItems()
         {
            var items = await  _unitOfWork.Items.GetAllAsync();
 
-            if (items == null)
+            if (items.Any())
             {
-                return NotFound("there is no items yet");
+                 var ItemsResponseDto = _mapper.Map<IEnumerable<GetItemsResponseDto>>(items); 
+                 return Ok(ItemsResponseDto);
             }
 
-            var ItemsResponseDto = _mapper.Map<IEnumerable<GetItemsResponseDto>>(items); 
-            return Ok(ItemsResponseDto);
+                return NotFound("There are no items yet");
         }
 
 
-        [Authorize(Roles = "User , Admin")]
+   //     [Authorize(Roles = "User , Admin")]
         [HttpGet]
-        [Route("GetById")]
-        public async Task<IActionResult> GetItemByID([FromBody] Guid id)
+        [Route("{id}")]
+        public async Task<IActionResult> GetById( Guid id)
         {
            var item = await  _unitOfWork.Items.GetByIdAsync(id);
 
             if (item == null)
             {
-                return NotFound("there is no items yet");
+                return NotFound();
             }
-
-       //     var ItemResponseDto = _mapper.Map<GetItemsResponseDto>(item);
+            
+            var ItemResponseDto = _mapper.Map<GetItemsResponseDto>(item);
           
-            return Ok(item);
+            return Ok(ItemResponseDto);
         }
         
         
-        [Authorize(Roles ="Admin")]
+      //[Authorize(Roles ="Admin")]
         [HttpPost]
         [Route("Add")]
         public async Task<IActionResult> Create([FromForm]CreateItemRequestDto itemDto)
@@ -92,22 +91,25 @@ namespace E_Commerce.Api.Controllers
                 foreach (var categoryId in itemDto.CategoryIds)
                 {
                     var category = await _unitOfWork.Categories.GetByIdAsync(categoryId);
-                
-                    var categoryItem = new CategoryItem
-                    {
-                        CategoryId = categoryId,
-                        ItemId = item.Id,
-                        Category = category,
-                        Item = item
-                    };
+            //        item.Categories.Add(category);
+                    category.Items.Add(item);
 
-                    var res = await _unitOfWork.CategoryItems.AddAsync(categoryItem);
-                    if (!res)
-                    {
-                        return BadRequest("failed to add ,the categoryItem is null");
-                    }
 
-                
+                    //var categoryItem = new CategoryItem
+                    //{
+                    //    CategoryId = categoryId,
+                    //    ItemId = item.Id,
+                    //    Category = category,
+                    //    Item = item
+                    //};
+
+                    //var res = await _unitOfWork.CategoryItems.AddAsync(categoryItem);
+                    //if (!res)
+                    //{
+                    //    return BadRequest("failed to add ,the categoryItem is null");
+                    //}
+
+
                 }
                 #endregion
 
@@ -123,44 +125,49 @@ namespace E_Commerce.Api.Controllers
         }
 
 
-        [Authorize(Roles = "Admin")]
+       // [Authorize(Roles = "Admin")]
         [Route("Update")]
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] UpdateItemRequestDto itemDto)
+
+        public async Task<IActionResult> Update([FromForm] UpdateItemRequestDto itemDto)
         {
             if (ModelState.IsValid)
             {
                 var item = _mapper.Map<Item>(itemDto);
 
+
                 #region Updating item
-                var result =  _unitOfWork.Items.Update(item);
-                if (result == false)
-                {
-                    return BadRequest("failed to update ,the item is null");
-                }
+
+                    var result =  _unitOfWork.Items.Update(item);
+                    if (result == false)
+                    {
+                        return BadRequest("failed to update ,the item is null");
+                    }
+                
                 #endregion
                 
                 
                 #region update Item  Categories
 
-                foreach (var categoryId in itemDto.CategoryIds)
-                {
-                    var category = await _unitOfWork.Categories.GetByIdAsync(categoryId);
+                    foreach (var categoryId in itemDto.CategoryIds)
+                    {
+                        var category = await _unitOfWork.Categories.GetByIdAsync(categoryId);
 
-                    var categoryItem = new CategoryItem
-                    {
-                        CategoryId = categoryId,
-                        ItemId = item.Id,
-                        Category = category,
-                        Item = item
-                    };
-                    var res = await _unitOfWork.CategoryItems.AddAsync(categoryItem);
-                    if (!res)
-                    {
-                        return BadRequest("failed to add ,the categoryItem is null");
+                        var categoryItem = new CategoryItem
+                        {
+                            CategoryId = categoryId,
+                            ItemId = item.Id,
+                            Category = category,
+                            Item = item
+                        };
+                        var res = await _unitOfWork.CategoryItems.AddAsync(categoryItem);
+                        if (!res)
+                        {
+                            return BadRequest("failed to add ,the categoryItem is null");
+                        }
                     }
-                }
                 #endregion 
+
                var saveCategoryItem = await _unitOfWork.SaveAndCommitChangesAsync();
                 if (!saveCategoryItem)
                 {
@@ -175,7 +182,7 @@ namespace E_Commerce.Api.Controllers
 
 
 
-        [Authorize(Roles = "Admin")]
+       // [Authorize(Roles = "Admin")]
         [Route("{id}")]
         [HttpDelete]
         public async Task<IActionResult> Delete(Guid id)
@@ -196,7 +203,7 @@ namespace E_Commerce.Api.Controllers
         }
 
 
-        [Authorize(Roles = "User , Admin")]
+   //     [Authorize(Roles = "User , Admin")]
         [HttpPost("AddItemToCart/{Id}")]
         public async Task<IActionResult> AddItemToCart(Guid Id)
         {

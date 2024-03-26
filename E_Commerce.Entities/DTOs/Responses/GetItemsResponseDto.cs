@@ -17,6 +17,6 @@ namespace E_Commerce.Entities.DTOs.Responses
         public decimal Discount { get; set; }
         public decimal Price { get; set; }
         public decimal FinalPrice => Price * (1 - Discount);
-        public ICollection<Guid> CategoriesIds { get; set; }
+        public IEnumerable<Guid> CategoriesIds { get; set; }
     }
 }

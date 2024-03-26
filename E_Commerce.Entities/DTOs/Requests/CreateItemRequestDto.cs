@@ -26,7 +26,7 @@ namespace E_Commerce.Entities.DTOs.Requests
         [Required]
         [Range(0, 1)]
         public decimal Discount { get; set; }
-        public IEnumerable<Guid> CategoryIds { get; set; }  
+        public ICollection<Guid> CategoryIds { get; set; }  
     }
 
 }

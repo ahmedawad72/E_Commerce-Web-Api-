@@ -11,7 +11,6 @@ namespace E_Commerce.Entities.DbSet
 {
     public class ApplicationUser : IdentityUser<Guid>
     {
-
         [Required, MaxLength(50)]
         public string FirstName { get; set; } = String.Empty;
 
