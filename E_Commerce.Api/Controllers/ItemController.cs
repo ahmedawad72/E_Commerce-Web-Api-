@@ -34,7 +34,7 @@ namespace E_Commerce.Api.Controllers
         }
 
 
-      //  [Authorize(Roles = "User , Admin")]
+        [Authorize(Roles = "User , Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAllItems()
         {
@@ -50,7 +50,7 @@ namespace E_Commerce.Api.Controllers
         }
 
 
-   //     [Authorize(Roles = "User , Admin")]
+        [Authorize(Roles = "User , Admin")]
         [HttpGet]
         [Route("{id}")]
         public async Task<IActionResult> GetById( Guid id)

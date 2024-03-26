@@ -24,15 +24,16 @@ namespace E_Commerce.Services.AuthServices
     public class AuthService : IAuthService
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole<Guid>> _roleManager;
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
-        private readonly IUnitOfWork _unitOfWork;
-        public AuthService(UserManager<ApplicationUser> userManager, IConfiguration configuration,IMapper mapper,IUnitOfWork unitOfWork)
+   //     private readonly IUnitOfWork _unitOfWork;
+        public AuthService(UserManager<ApplicationUser> userManager, IConfiguration configuration,IMapper mapper, RoleManager<IdentityRole<Guid>> roleManager)
         {
             _userManager = userManager;
             _configuration = configuration;
             _mapper = mapper;
-            _unitOfWork = unitOfWork;
+            _roleManager = roleManager;       
         }
         
         public async Task<AuthResult> RegisterAsync( ApplicationUser appUser, string password)
@@ -105,6 +106,27 @@ namespace E_Commerce.Services.AuthServices
                 return AuthResult.Successful(token, expiryDate, roles); 
         }
 
+        public async Task<bool> AddRoleAsync(AddAccountRoleRequestDto roleDto)
+        {
+            var user = await _userManager.FindByIdAsync(roleDto.UserId.ToString());
+            var roleExists = await _roleManager.RoleExistsAsync(roleDto.Role);
+            if (user == null || !roleExists)
+            {
+                return false;
+            }
+
+            if (await _userManager.IsInRoleAsync(user, roleDto.Role))
+            {
+                return false;
+            }
+
+            var result = await _userManager.AddToRoleAsync(user, roleDto.Role);
+            if (result.Succeeded)
+            {
+                return true; 
+            }
+            return false;
+        }
         private async Task<JwtSecurityToken> GenerateJwtToken(ApplicationUser user)
         {
             // Retrieve claims and roles for the user

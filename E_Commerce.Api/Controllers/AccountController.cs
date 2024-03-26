@@ -13,13 +13,13 @@ namespace E_Commerce.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AppUserController : ControllerBase
+    public class AccountController : ControllerBase
     {
      //   private readonly AppDbContext _context;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IAuthService _authService;
-        public AppUserController(AppDbContext context, IUnitOfWork unitOfWork,
+        public AccountController(AppDbContext context, IUnitOfWork unitOfWork,
                                  IAuthService authService,IMapper mapper)
         {
        //     _context = context;
@@ -44,7 +44,7 @@ namespace E_Commerce.Api.Controllers
             }
             return BadRequest(requestDto);
         }
-        
+
         [HttpPost]
         [Route("Login")]
         public async Task<IActionResult> Login([FromBody] UserLoginRequestDto requestDto)
@@ -52,7 +52,7 @@ namespace E_Commerce.Api.Controllers
             if (ModelState.IsValid)
             {
                 var appUser = _mapper.Map<ApplicationUser>(requestDto);
-                var authResult = await _authService.LoginAsync(appUser,requestDto.Password);
+                var authResult = await _authService.LoginAsync(appUser, requestDto.Password);
                 if (authResult.IsAuthenticated)
                 {
                     return Ok(authResult);
@@ -60,6 +60,25 @@ namespace E_Commerce.Api.Controllers
                 return BadRequest(authResult);
             }
             return BadRequest(requestDto);
+        }
+
+
+        [HttpPost("AddRole")]
+        public async Task<IActionResult> AddRoleAsync([FromBody] AddAccountRoleRequestDto requestDto)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _authService.AddRoleAsync(requestDto);
+
+                if (!result)
+                {
+                    return BadRequest("Failed to add the role to the Account");
+                }
+
+                return Ok(requestDto);
+            }
+
+           return BadRequest(ModelState);
         }
     }
 }
