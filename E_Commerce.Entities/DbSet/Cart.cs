@@ -14,11 +14,9 @@ namespace E_Commerce.Entities.DbSet
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid UserId { get; set; }
-
         [ForeignKey("UserId")]
         public virtual ApplicationUser User { get; set; }
-        public virtual Item Items { get; set; }
-        public virtual ICollection<CartItem>? CartsItems { get; set; }
-
+        public virtual ICollection <Item> Items { get; set; }
+        public virtual ICollection<CartItem> CartsItems { get; set; }
     }
 }

@@ -51,7 +51,7 @@ namespace E_Commerce.Services.Data
                 .HasKey(ci => new { ci.CartId, ci.ItemId });
 
             modelBuilder.Entity<Item>().
-                HasMany(i => i.Categories).
+                HasMany(i => i.Carts).
                 WithMany(c => c.Items).
                 UsingEntity<CartItem>();
 

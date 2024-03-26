@@ -15,14 +15,14 @@ namespace E_Commerce.Api.Controllers
     [ApiController]
     public class AppUserController : ControllerBase
     {
-        private readonly AppDbContext _context;
+     //   private readonly AppDbContext _context;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IAuthService _authService;
         public AppUserController(AppDbContext context, IUnitOfWork unitOfWork,
                                  IAuthService authService,IMapper mapper)
         {
-            _context = context;
+       //     _context = context;
             _unitOfWork = unitOfWork;
             _authService = authService;
             _mapper = mapper;

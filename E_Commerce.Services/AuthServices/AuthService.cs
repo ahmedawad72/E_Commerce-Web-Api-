@@ -62,15 +62,15 @@ namespace E_Commerce.Services.AuthServices
                 if (is_created.Succeeded)
                 {
                     // Generate Token
-                    var jwtSecurityToken = await GenerateJwtToken(appUser);
                     await _userManager.AddToRoleAsync(appUser, "User");
+                    var jwtSecurityToken = await GenerateJwtToken(appUser);
 
                     // Additional step: Create a cart for the user
-                    var cartCreationResult = await _unitOfWork.Carts.CreateCartForUserAsync(appUser.Id,_unitOfWork);
-                    if (!cartCreationResult)
-                    {
-                        return AuthResult.Failed(new List<string> { "Failed to create a cart for the user" });
-                    }
+                    //var cartCreationResult = await _unitOfWork.Carts.CreateCartForUserAsync(appUser.Id,_unitOfWork);
+                    //if (!cartCreationResult)
+                    //{
+                    //    return AuthResult.Failed(new List<string> { "Failed to create a cart for the user" });
+                    //}
                 
                     var token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
                     var roles = new List<string> { "User" };
@@ -78,7 +78,7 @@ namespace E_Commerce.Services.AuthServices
 
                     return  AuthResult.Successful(token, expiryDate, roles);
 
-            }
+                }
             #endregion
             // User creation not succeeded
             return AuthResult.Failed(is_created.Errors.Select(e => e.Description).ToList());

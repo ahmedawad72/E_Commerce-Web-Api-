@@ -15,6 +15,7 @@ using System.Security.Claims;
 
 namespace E_Commerce.Api.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ItemController : ControllerBase
@@ -67,7 +68,7 @@ namespace E_Commerce.Api.Controllers
         }
         
         
-      //[Authorize(Roles ="Admin")]
+        [Authorize(Roles ="User")]
         [HttpPost]
         [Route("Add")]
         public async Task<IActionResult> Create([FromForm]CreateItemRequestDto itemDto)
@@ -91,9 +92,8 @@ namespace E_Commerce.Api.Controllers
                 foreach (var categoryId in itemDto.CategoryIds)
                 {
                     var category = await _unitOfWork.Categories.GetByIdAsync(categoryId);
-            //        item.Categories.Add(category);
                     category.Items.Add(item);
-
+                  
 
                     //var categoryItem = new CategoryItem
                     //{
@@ -113,7 +113,7 @@ namespace E_Commerce.Api.Controllers
                 }
                 #endregion
 
-                var saveCategoryItem = await _unitOfWork.SaveAndCommitChangesAsync();
+                    var saveCategoryItem = await _unitOfWork.SaveAndCommitChangesAsync();
                 if (!saveCategoryItem)
                 {
                     return BadRequest("failed to Save And Commit CategoryItem ");

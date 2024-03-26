@@ -9,6 +9,10 @@ namespace E_Commerce.Entities.DbSet
 {
     public class Category
     {
+        public Category()
+        {
+            Items = new List<Item>();
+        }
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
         [Required, MaxLength(50)]

@@ -13,6 +13,11 @@ namespace E_Commerce.Entities.DbSet
         public Item()
         {
             Categories = new List<Category>();
+            Orders = new List<Order>();
+            Carts = new List<Cart>();
+            CategoriesItems = new List<CategoryItem>();
+            OrdersItems = new List<OrderItem>();
+            CartsItems = new List<CartItem>();
         }
 
 
@@ -35,12 +40,12 @@ namespace E_Commerce.Entities.DbSet
         public decimal Price { get; set; }
         [NotMapped]
         public decimal FinalPrice => Price * (1 - Discount);
-        public virtual ICollection<Order>? Orders { get; set; }
-        public virtual ICollection<Cart>? Carts { get; set; }
-        public virtual ICollection<Category>? Categories { get; set; }
-        public virtual ICollection<OrderItem>? OrdersItems { get; set; }
-        public virtual ICollection<CartItem>? CartsItems { get; set; }
-        public virtual ICollection<CategoryItem>? CategoriesItems { get; set; }
+        public virtual ICollection<Order> Orders { get; set; }
+        public virtual ICollection<Cart> Carts { get; set; }
+        public virtual ICollection<Category> Categories { get; set; }
+        public virtual ICollection<OrderItem> OrdersItems { get; set; }
+        public virtual ICollection<CartItem> CartsItems { get; set; }
+        public virtual ICollection<CategoryItem> CategoriesItems { get; set; }
 
        
     }

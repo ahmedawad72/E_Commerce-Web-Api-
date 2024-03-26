@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace E_Commerce.Services.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240317235742_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20240326082950_InitialCreation")]
+    partial class InitialCreation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -112,15 +112,10 @@ namespace E_Commerce.Services.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ItemsId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ItemsId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -136,9 +131,6 @@ namespace E_Commerce.Services.Migrations
                     b.Property<Guid>("ItemId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CategoriesId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -149,8 +141,6 @@ namespace E_Commerce.Services.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("CartId", "ItemId");
-
-                    b.HasIndex("CategoriesId");
 
                     b.HasIndex("ItemId");
 
@@ -421,19 +411,11 @@ namespace E_Commerce.Services.Migrations
 
             modelBuilder.Entity("E_Commerce.Entities.DbSet.Cart", b =>
                 {
-                    b.HasOne("E_Commerce.Entities.DbSet.Item", "Items")
-                        .WithMany("Carts")
-                        .HasForeignKey("ItemsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("E_Commerce.Entities.DbSet.ApplicationUser", "User")
                         .WithOne("Cart")
                         .HasForeignKey("E_Commerce.Entities.DbSet.Cart", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Items");
 
                     b.Navigation("User");
                 });
@@ -444,12 +426,6 @@ namespace E_Commerce.Services.Migrations
                         .WithMany("CartsItems")
                         .HasForeignKey("CartId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("E_Commerce.Entities.DbSet.Category", null)
-                        .WithMany()
-                        .HasForeignKey("CategoriesId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("E_Commerce.Entities.DbSet.Item", "Item")
@@ -581,8 +557,6 @@ namespace E_Commerce.Services.Migrations
 
             modelBuilder.Entity("E_Commerce.Entities.DbSet.Item", b =>
                 {
-                    b.Navigation("Carts");
-
                     b.Navigation("CartsItems");
 
                     b.Navigation("CategoriesItems");

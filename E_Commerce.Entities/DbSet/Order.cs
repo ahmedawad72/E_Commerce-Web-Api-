@@ -10,6 +10,11 @@ namespace E_Commerce.Entities.DbSet
 {
     public class Order
     {
+        public Order()
+        {
+            Items = new List<Item>();
+            OrdersItems = new List<OrderItem>();
+        }
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
         [Required, MaxLength(100)]
@@ -26,11 +31,11 @@ namespace E_Commerce.Entities.DbSet
         public DateTime CreatedOn { get; set; } = DateTime.Now;
 
         public Guid UserId { get; set; }
+        [ForeignKey("UserId")]
+        public virtual ApplicationUser User { get; set; }      // May i have to add Order navigation property in User 
 
-        public virtual ApplicationUser User { get; set; }
-
-        public virtual ICollection<Item>? Items { get; set; }
-        public virtual ICollection<OrderItem>? OrdersItems { get; set; }
+        public virtual ICollection<Item> Items { get; set; }
+        public virtual ICollection<OrderItem> OrdersItems { get; set; }
 
     }
 }
