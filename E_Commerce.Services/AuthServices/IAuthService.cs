@@ -1,21 +1,17 @@
 ﻿using E_Commerce.Entities.AuthenticationModels;
 using E_Commerce.Entities.DbSet;
-using E_Commerce.Entities.DTOs.Requests;
-using E_Commerce.Entities.DTOs.Responses;
-using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using E_Commerce.Entities.DTOs.Account;
+using E_Commerce.Entities.DTOs.AccountDTOs;
 
 namespace E_Commerce.Services.AuthServices
 {
     public interface IAuthService
     {
-        public Task<AuthResult> RegisterAsync(ApplicationUser user,string dtoPassword);
+        public Task<AuthResult> RegisterAsync(ApplicationUser user, string dtoPassword);
         public Task<AuthResult> LoginAsync(ApplicationUser user, string dtoPassword);
-        public Task<bool> AddRoleAsync(AddAccountRoleRequestDto roleDto);
-
+        public Task<bool> AddRoleAsync(AddRoleDto roleDto);
+        Task<Result> EmailConfirmationAsync(string userId, string code);
+        Task<Result> ForgetPassword(string email);
+        Task<Result> ResetPasswordAsync(string userId, string newPassword);
     }
 }

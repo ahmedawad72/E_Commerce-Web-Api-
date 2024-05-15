@@ -9,9 +9,9 @@ namespace E_Commerce.Services.Repositories.Interfaces
     public interface IGenericRepo<T> where T : class
     {
         Task<IEnumerable<T>> GetAllAsync();
-        Task<T?> GetByIdAsync(Guid id);
+        Task<T?> GetByIdAsync(string id);
         Task<bool> AddAsync(T entity);
-        Task<bool> DeleteAsync(Guid id);
+        Task<bool> DeleteAsync(string id);
         bool Update(T entity);
     }
 }

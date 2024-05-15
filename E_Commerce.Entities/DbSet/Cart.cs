@@ -12,11 +12,12 @@ namespace E_Commerce.Entities.DbSet
     public class Cart
     {
         [Key]
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public Guid UserId { get; set; }
-        [ForeignKey("UserId")]
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string UserId { get; set; }
+        public decimal TotalPrice{ get; set; }
         public virtual ApplicationUser User { get; set; }
-        public virtual ICollection <Item> Items { get; set; }
-        public virtual ICollection<CartItem> CartsItems { get; set; }
+
+        public virtual ICollection<Product> Items { get; set; }
+        public virtual ICollection<CartItem> CartItems { get; set; }
     }
 }

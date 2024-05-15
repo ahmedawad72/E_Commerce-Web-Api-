@@ -5,15 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace E_Commerce.Entities.DTOs.Requests
+namespace E_Commerce.Entities.DTOs.AccountDTOs
 {
-    public class UserLoginRequestDto
+    public class ForgetPasswordDto
     {
         [Required]
         [EmailAddress]
         public string Email { get; set; }
-        [Required]
-        public string Password { get; set; }
 
     }
 }

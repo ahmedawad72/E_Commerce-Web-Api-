@@ -10,7 +10,7 @@ namespace E_Commerce.Services.Repositories.Interfaces
 {
     public interface ICartItemRepo:IGenericRepo<CartItem>
     {
-        Task<bool> DeleteItemFromCart( Guid itemId, Guid cartId);
+        Task<bool> DeleteItemFromCart( string itemId, string cartId);
         
     }
 }

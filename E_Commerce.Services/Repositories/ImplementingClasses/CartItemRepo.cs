@@ -16,7 +16,7 @@ namespace E_Commerce.Services.Repositories.ImplementingClasses
         public CartItemRepo(AppDbContext context, IMapper mapper) : base(context, mapper)
         {
         }
-        public async Task<bool> DeleteItemFromCart( Guid itemId, Guid cartId)
+        public async Task<bool> DeleteItemFromCart( string itemId, string cartId)
         {
             var item = await _dbSet.FindAsync(itemId, cartId);
             if (item == null)

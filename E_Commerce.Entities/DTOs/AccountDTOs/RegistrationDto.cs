@@ -5,21 +5,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace E_Commerce.Entities.DTOs.Requests
+namespace E_Commerce.Entities.DTOs.Account
 {
-    public class UserRegistrationRequestDto
+    public class RegistrationDto
     {
-        [Required]
-        public string FirstName { get; set; } 
+        public string FirstName { get; set; }
         [Required]
         public string LastName { get; set; }
         [Required]
         [EmailAddress]
         public string Email { get; set; }
         [Required]
-        public string password { get; set; }
+        public string Password { get; set; }
         [Required]
         public string PhoneNumber { get; set; }
-        
     }
 }

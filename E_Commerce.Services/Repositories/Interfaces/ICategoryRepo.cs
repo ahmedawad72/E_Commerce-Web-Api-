@@ -9,6 +9,6 @@ namespace E_Commerce.Services.Repositories.Interfaces
 {
     public interface ICategoryRepo:IGenericRepo<Category>
     {
-
+        Task<IEnumerable<Product>> GetCategoryProducts(string categoryId);
     }
 }

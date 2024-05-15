@@ -1,112 +1,92 @@
-﻿using E_Commerce.Entities.AuthenticationModels;
+﻿using AutoMapper;
+using E_Commerce.Entities.AuthenticationModels;
 using E_Commerce.Entities.DbSet;
-using E_Commerce.Entities.DTOs.Requests;
+using E_Commerce.Entities.DTOs.Account;
+using E_Commerce.Entities.DTOs.AccountDTOs;
+using E_Commerce.Services.Configuration;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
-using E_Commerce.Services.Configuration;
-using E_Commerce.Entities.DTOs.Responses;
-using System.Data;
-using AutoMapper;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using E_Commerce.Services.Repositories.Interfaces;
+using System.Text;
 
 namespace E_Commerce.Services.AuthServices
 {
     public class AuthService : IAuthService
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<IdentityRole<Guid>> _roleManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
-   //     private readonly IUnitOfWork _unitOfWork;
-        public AuthService(UserManager<ApplicationUser> userManager, IConfiguration configuration,IMapper mapper, RoleManager<IdentityRole<Guid>> roleManager)
+        public AuthService(UserManager<ApplicationUser> userManager, IConfiguration configuration, IMapper mapper, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _configuration = configuration;
             _mapper = mapper;
-            _roleManager = roleManager;       
+            _roleManager = roleManager;
         }
-        
-        public async Task<AuthResult> RegisterAsync( ApplicationUser appUser, string password)
+
+        public async Task<AuthResult> RegisterAsync(ApplicationUser appUser, string password)
         {
-                #region Check for email and phone number region
+           // check if the email is already registered
+            var emailExistingUser = await _userManager.FindByEmailAsync(appUser.Email);
+            if (emailExistingUser != null)
+            {
+                return AuthResult.Failed(
+                         new List<string> { "This email has already registered" });
+            }
+            // check if the Phone Number is already registered
+            var phoneExistingUser = await _userManager.FindByPhoneNumberAsync(appUser.PhoneNumber);
+            if (phoneExistingUser != null)
+            {
+                return AuthResult.Failed(
+                        new List<string> { "This Phone number has already registered" });
+            }
 
-                // check if the email is already registered
-                var emailExistingUser = await _userManager.FindByEmailAsync(appUser.Email);
-                if (emailExistingUser != null)
-                {
-                        return AuthResult.Failed(
-                                 new List<string> {"This email has already registered"} );
-                }
-                // check if the Phone Number is already registered
-                var phoneExistingUser = await _userManager.FindByPhoneNumberAsync(appUser.PhoneNumber);
-                if (phoneExistingUser != null)
-                {
-                      return AuthResult.Failed(
-                              new List<string> { "This Phone number has already registered" } );
-                }
 
-                #endregion
+            var is_created = await _userManager.CreateAsync(appUser, password);
+            if (is_created.Succeeded)
+            {
+                // Generate Token
+                await _userManager.AddToRoleAsync(appUser, "User");
+                var jwtSecurityToken = await GenerateJwtToken(appUser);
 
-                #region Creating user region
-           
-                var is_created = await _userManager.CreateAsync(appUser, password);
-                if (is_created.Succeeded)
-                {
-                    // Generate Token
-                    await _userManager.AddToRoleAsync(appUser, "User");
-                    var jwtSecurityToken = await GenerateJwtToken(appUser);
+                var token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
+                var roles = new List<string> { "User" };
+                var expiryDate = jwtSecurityToken.ValidTo;
 
-                    // Additional step: Create a cart for the user
-                    //var cartCreationResult = await _unitOfWork.Carts.CreateCartForUserAsync(appUser.Id,_unitOfWork);
-                    //if (!cartCreationResult)
-                    //{
-                    //    return AuthResult.Failed(new List<string> { "Failed to create a cart for the user" });
-                    //}
-                
-                    var token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
-                    var roles = new List<string> { "User" };
-                    var expiryDate = jwtSecurityToken.ValidTo;
+                return AuthResult.Successful(token, expiryDate, roles);
 
-                    return  AuthResult.Successful(token, expiryDate, roles);
-
-                }
-            #endregion
+            }
             // User creation not succeeded
             return AuthResult.Failed(is_created.Errors.Select(e => e.Description).ToList());
         }
-      
-        public async Task<AuthResult> LoginAsync(ApplicationUser appUser,string password)
-        {
-            
-                // check if the email is not  registered 
-                var existingUser = await _userManager.FindByEmailAsync(appUser.Email);
-                var isValidPassword = await _userManager.CheckPasswordAsync(existingUser, password);
-                if (existingUser == null || !isValidPassword)
-                {
-                         return AuthResult.Failed(
-                                 new List<string>{  "Invalid email or password !"} );
-                }
-                
-                // Generate Token
-                var jwtSecurityToken = await GenerateJwtToken(existingUser);
-                var token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
-                var roles = await _userManager.GetRolesAsync(existingUser);
-                var expiryDate = jwtSecurityToken.ValidTo;
 
-                return AuthResult.Successful(token, expiryDate, roles); 
+        public async Task<AuthResult> LoginAsync(ApplicationUser appUser, string password)
+        {
+
+            // check if the email is not  registered 
+            var existingUser = await _userManager.FindByEmailAsync(appUser.Email);
+            var isValidPassword = await _userManager.CheckPasswordAsync(existingUser, password);
+            if (existingUser == null || !isValidPassword)
+            {
+                return AuthResult.Failed(
+                        new List<string> { "Invalid email or password !" });
+            }
+
+            // Generate Token
+            var jwtSecurityToken = await GenerateJwtToken(existingUser);
+            var token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
+            var roles = await _userManager.GetRolesAsync(existingUser);
+            var expiryDate = jwtSecurityToken.ValidTo;
+
+            return AuthResult.Successful(token, expiryDate, roles);
         }
 
-        public async Task<bool> AddRoleAsync(AddAccountRoleRequestDto roleDto)
+        public async Task<bool> AddRoleAsync(AddRoleDto roleDto)
         {
             var user = await _userManager.FindByIdAsync(roleDto.UserId.ToString());
             var roleExists = await _roleManager.RoleExistsAsync(roleDto.Role);
@@ -123,10 +103,11 @@ namespace E_Commerce.Services.AuthServices
             var result = await _userManager.AddToRoleAsync(user, roleDto.Role);
             if (result.Succeeded)
             {
-                return true; 
+                return true;
             }
             return false;
         }
+
         private async Task<JwtSecurityToken> GenerateJwtToken(ApplicationUser user)
         {
             // Retrieve claims and roles for the user
@@ -160,6 +141,77 @@ namespace E_Commerce.Services.AuthServices
 
             return jwtSecurityToken;
         }
-    }  
+
+        public async Task<Result> EmailConfirmationAsync(string userId, string code)
+        {
+            if (userId == null || code == null)
+            {
+                return new Result { Message = "Invalid Email" };
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return new Result { Message = $"Unable to load user with ID '{userId}'." };
+            }
+
+            code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+            var isConfirmed = await _userManager.ConfirmEmailAsync(user, code);
+
+            var result = new Result();
+            result.Message = isConfirmed.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
+            result.IsSuccesed = isConfirmed.Succeeded;
+
+            return result;
+        }
+
+        public async Task<Result> ForgetPassword(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return new Result { Message = "Email Is Not Found" };
+            }
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+            {
+                return new Result { Message = "No User With This Email" };
+            }
+
+            if (!user.EmailConfirmed)
+            {
+                return new Result { Message = "Please Confirm Email" };
+            }
+
+            return new Result
+            {
+                Message = user.Id,
+                IsSuccesed = true
+            };
+        }
+
+        public async Task<Result> ResetPasswordAsync(string userId, string newPassword)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(newPassword))
+            {
+                return new Result { Message = "Password or UserId cannot be Empty or Null" };
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return new Result { Message = $"Unable to load user with ID '{userId}'." };
+            }
+
+            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var isReset = await _userManager.ResetPasswordAsync(user, code, newPassword);
+
+            var result = new Result();
+            result.Message = isReset.Succeeded ? "Password Reset Succesfully" : "Unable to reset password";
+            result.IsSuccesed = isReset.Succeeded;
+
+            return result;
+        }
+    }
 }
 

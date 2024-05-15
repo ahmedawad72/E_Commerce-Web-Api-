@@ -12,30 +12,25 @@ namespace E_Commerce.Entities.DbSet
     {
         public Order()
         {
-            Items = new List<Item>();
-            OrdersItems = new List<OrderItem>();
+            DateTime CreatedOn = DateTime.Now;
+            DateTime UpdatedOn = DateTime.Now;
         }
         [Key]
-        public Guid Id { get; set; } = Guid.NewGuid();
-        [Required, MaxLength(100)]
-        public string Name { get; set; } = String.Empty;
-
-        [Required, MaxLength(1000)]
-        public string Description { get; set; } = String.Empty;
-
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+      
         [Required, MaxLength(250)]
         public string ShipingAddress { get; set; }=String.Empty;
-
-        public decimal TotalPrice { get; set; }
-
+        
+        public decimal TotalPrice {  get; set; }
+        
         public DateTime CreatedOn { get; set; } = DateTime.Now;
-
-        public Guid UserId { get; set; }
-        [ForeignKey("UserId")]
-        public virtual ApplicationUser User { get; set; }      // May i have to add Order navigation property in User 
-
-        public virtual ICollection<Item> Items { get; set; }
-        public virtual ICollection<OrderItem> OrdersItems { get; set; }
-
+  
+        public DateTime UpdatedOn { get; set; } = DateTime.Now;
+        public bool IsCreated { get; set; }
+        public string UserId { get; set; }
+        public virtual ApplicationUser User { get; set; }      
+        
+        public virtual ICollection<Product> Items{ get; set; }     
+        public virtual ICollection<OrderItem> OrderItems{ get; set; }     
     }
 }

@@ -9,5 +9,6 @@ namespace E_Commerce.Services.Repositories.Interfaces
 {
     public interface IOrderItemRepo:IGenericRepo<OrderItem>
     {
+     
     }
 }

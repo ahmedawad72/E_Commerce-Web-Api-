@@ -17,12 +17,12 @@ namespace E_Commerce.Services.Repositories.ImplementingClasses
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
         public IAppUserRepo Users { get; }
-        public IItemRepo Items {get;}
+        public IProductRepo Products {get;}
         public ICategoryRepo Categories { get; }
         public ICartRepo Carts { get; }
         public IOrderRepo Orders { get; }
         public IOrderItemRepo OrderItems { get; }
-        public ICategoryItemRepo CategoryItems { get; }
+        public IProductCategoryRepo ProductCategories { get; }
         public ICartItemRepo CartItems { get; }
 
         public UnitOfWork(AppDbContext context,IMapper mapper)
@@ -30,12 +30,12 @@ namespace E_Commerce.Services.Repositories.ImplementingClasses
             _context = context;
             _mapper = mapper;
             Users = new AppUserRepo(_context,_mapper);
-            Items = new ItemRepo(_context,_mapper);
+            Products = new ProductRepo(_context,_mapper);
             Categories = new CategoryRepo(_context,_mapper);
             Carts = new CartRepo(_context,_mapper);
             Orders = new OrderRepo(_context,_mapper);
             OrderItems = new OrderItemRepo(_context,_mapper);
-            CategoryItems = new CategoryItemRepo(_context,_mapper);
+            ProductCategories = new ProductCategoryRepo(_context,_mapper);
             CartItems = new CartItemRepo(_context,_mapper);
             
         }

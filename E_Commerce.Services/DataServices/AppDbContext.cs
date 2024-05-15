@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace E_Commerce.Services.Data
 {
-    public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
+    public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -21,80 +21,70 @@ namespace E_Commerce.Services.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            #region Category_Item 
 
-            modelBuilder.Entity<CategoryItem>()
-                .HasKey(ci => new { ci.CategoryId, ci.ItemId });
+            // USER
+            modelBuilder.Entity<ApplicationUser>()
+                .HasOne(u => u.Cart)
+                .WithOne(c => c.User);
+                
 
-            modelBuilder.Entity<Item>().
-                HasMany(i => i.Categories).
-                WithMany(c => c.Items).
-                UsingEntity<CategoryItem>();
+            // Category
+            modelBuilder.Entity<Product>()
+                .HasMany(e => e.Categories)
+                .WithMany(e => e.Products)
+                .UsingEntity<ProductCategory>();
 
+            modelBuilder.Entity<ProductCategory>()
+                .HasOne(pc => pc.Category)
+                .WithMany(c => c.ProductCategories)
+                .HasForeignKey(pc => pc.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);  
 
-            modelBuilder.Entity<CategoryItem>().    
-                 HasOne(ci => ci.Category)
-                .WithMany(c => c.CategoriesItems)
-                .HasForeignKey(ci => ci.CategoryId)
-                .OnDelete(DeleteBehavior.Restrict); // This will prevent category from being deleted when CategoryItem exist
+            modelBuilder.Entity<ProductCategory>()
+                .HasOne(pc => pc.Product)
+                .WithMany(p => p.ProductCategories)
+                .HasForeignKey(pc => pc.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
 
-            modelBuilder.Entity<CategoryItem>()
-                .HasOne(ci => ci.Item)
-                .WithMany(i => i.CategoriesItems)
-                .HasForeignKey(ci => ci.ItemId)
-                .OnDelete(DeleteBehavior.Restrict);  // This will prevent Item from being deleted when CategoryItem is deleted
-            #endregion
-
-            #region Cart_Item
-
-            modelBuilder.Entity<CartItem>()
-                .HasKey(ci => new { ci.CartId, ci.ItemId });
-
-            modelBuilder.Entity<Item>().
-                HasMany(i => i.Carts).
-                WithMany(c => c.Items).
-                UsingEntity<CartItem>();
-
+            // CART
+            modelBuilder.Entity<Product>()
+                .HasMany(p => p.Carts)
+                .WithMany(c => c.Items)
+                .UsingEntity<CartItem>();
 
             modelBuilder.Entity<CartItem>().
                  HasOne(ci => ci.Cart)
-                .WithMany(c => c.CartsItems)
+                .WithMany(c => c.CartItems)
                 .HasForeignKey(ci => ci.CartId)
-                .OnDelete(DeleteBehavior.Restrict); // This will prevent Cart from being deleted when CartItem exist
+                .OnDelete(DeleteBehavior.Cascade); 
 
             modelBuilder.Entity<CartItem>()
-                .HasOne(ci => ci.Item)
-                .WithMany(i => i.CartsItems)
-                .HasForeignKey(ci => ci.ItemId)
-                .OnDelete(DeleteBehavior.Restrict); // This will prevent Item from being deleted when CartItem is exist
-            #endregion  
+                .HasOne(pc => pc.Product)
+                .WithMany(p => p.CartItems)
+                .HasForeignKey(pc => pc.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             
-            #region Order_Item
-
-            modelBuilder.Entity<OrderItem>()
-                .HasKey(ci => new { ci.OrderId, ci.ItemId });
-
-            modelBuilder.Entity<Item>().
-                HasMany(i => i.Orders).
-                WithMany(o => o.Items).
-                UsingEntity<OrderItem>();
-
+            
+            // ORDER
+            
+            modelBuilder.Entity<Product>()
+                .HasMany(p => p.Orders)
+                .WithMany(c => c.Items)
+                .UsingEntity<OrderItem>();
 
             modelBuilder.Entity<OrderItem>().
-                 HasOne(ci => ci.Order)
-                .WithMany(c => c.OrdersItems)
-                .HasForeignKey(ci => ci.OrderId)
-                .OnDelete(DeleteBehavior.Restrict); // This will prevent Order from being deleted when OrderItem exist
-
+                 HasOne(oi => oi.Order)
+                .WithMany(o => o.OrderItems)
+                .HasForeignKey(oi => oi.OrderId)
+                .OnDelete(DeleteBehavior.Cascade); 
 
             modelBuilder.Entity<OrderItem>()
-                .HasOne(ci => ci.Item)
-                .WithMany(i => i.OrdersItems)
-                .HasForeignKey(ci => ci.ItemId)
-                .OnDelete(DeleteBehavior.Restrict); // This will prevent Item from being deleted when OrderItem is deleted
-
-
-            #endregion
+                .HasOne(oi => oi.Product)
+                .WithMany(i => i.OrderItems)
+                .HasForeignKey(oi => oi.ProductId)
+                .OnDelete(DeleteBehavior.Cascade); 
         }
 
         public DbSet<Cart> Carts { get; set; }
@@ -103,7 +93,7 @@ namespace E_Commerce.Services.Data
 
         public DbSet<Order> Orders { get; set; }
 
-        public DbSet<Item> Items { get; set; }
+        public DbSet<Product> Products { get; set; }
     
     }
 }

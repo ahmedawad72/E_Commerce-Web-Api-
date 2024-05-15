@@ -40,7 +40,7 @@ namespace E_Commerce.Services.Repositories.ImplementingClasses
             return await _dbSet.ToListAsync();
         }
       
-        public virtual async Task<T?> GetByIdAsync(Guid id)
+        public virtual async Task<T?> GetByIdAsync(string id)
         {
             return await _dbSet.FindAsync(id);
         }
@@ -55,7 +55,7 @@ namespace E_Commerce.Services.Repositories.ImplementingClasses
             
         }
        
-        public virtual async Task<bool> DeleteAsync(Guid id)
+        public virtual async Task<bool> DeleteAsync(string id)
         {
             var entity = await _dbSet.FindAsync(id);
             if (entity != null)

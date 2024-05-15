@@ -4,13 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace E_Commerce.Entities.DTOs.Requests
+namespace E_Commerce.Entities.DTOs.Account
 {
-    public class AddAccountRoleRequestDto
+    public class AddRoleDto
     {
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         public string Role { get; set; }
-    
     }
 }

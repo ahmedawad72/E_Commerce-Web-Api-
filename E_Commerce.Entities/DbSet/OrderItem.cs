@@ -10,16 +10,21 @@ namespace E_Commerce.Entities.DbSet
 {
     public class OrderItem
     {
+        public OrderItem()
+        {
+            TotalPrice = UnitPrice * Quantity;
+        }
         public decimal UnitPrice { get; set; }
-        public decimal TotalPrice { get; set; }
         public int Quantity { get; set; }
-        public Guid OrderId { get; set; }
-        [ForeignKey("OrderId")]
-        public virtual Order Order { get; set; }    
-        public Guid ItemId { get; set; }
-        [ForeignKey("ItemId")]
-        public virtual Item Item { get; set; }
 
+        public decimal TotalPrice;
+
+        public string OrderId { get; set; }
+        public virtual Order Order { get; set; }    
+       
+        public string ProductId { get; set; }
+        public virtual Product Product { get; set; }
+       
 
     }
 }

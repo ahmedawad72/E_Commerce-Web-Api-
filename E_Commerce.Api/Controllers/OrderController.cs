@@ -1,14 +1,11 @@
-﻿using AutoMapper;
-using E_Commerce.Entities.DbSet;
-using E_Commerce.Entities.DTOs.Requests;
-using E_Commerce.Entities.DTOs.Responses;
-using E_Commerce.Services.Data;
+﻿using E_Commerce.Entities.DbSet;
+using E_Commerce.Entities.DTOs.OrderDTOs;
 using E_Commerce.Services.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using System.Security.Claims;
 
 namespace E_Commerce.Api.Controllers
@@ -17,131 +14,97 @@ namespace E_Commerce.Api.Controllers
     [ApiController]
     public class OrderController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public OrderController(AppDbContext context, IUnitOfWork unitOfWork, IMapper mapper, UserManager<ApplicationUser> userManager)
+        public OrderController(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
         {
-            _context = context;
-            _unitOfWork = unitOfWork;
-            _mapper = mapper;
-            _userManager = userManager;
+            this._unitOfWork = unitOfWork;
+            this._userManager = userManager;
         }
 
-        [Authorize(Roles = "User , Admin")]
-        [HttpGet("GetOrder/{Id}")]
-        public async Task<IActionResult> GetOrderById(Guid Id)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized("You must be logged in to perform this action.");
-            }
-
-            var user = await _userManager.FindByIdAsync(userId);
-            if(user == null)
-            {
-                return Unauthorized("You must be logged in to perform this action.");
-            }
-
-            var order = await _unitOfWork.Orders.GetByIdAsync(Id);
-            if (order == null)
-            {
-                return NotFound("Order not Found");
-            }
-            var orderResponse = _mapper.Map<GetOrderResponseDto>(order);
-            return Ok(orderResponse);
-        }
-
-        [Authorize(Roles = "User , Admin")]
-        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        [HttpGet("GetOrders")]
         public async Task<IActionResult> GetOrders()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized("You must be logged in to perform this action.");
-            }
-
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                return Unauthorized("You must be logged in to perform this action.");
-            }
-
             var orders = await _unitOfWork.Orders.GetAllAsync();
             if (orders == null)
             {
-                return NotFound("Order not Found");
+                return NotFound();
             }
-            var ordersResponse = _mapper.Map<IEnumerable<GetOrderResponseDto>>(orders);
-            return Ok(ordersResponse);
+            var orderDTOs = orders.Select(orderDto => new GetOrderDto
+            {
+                Id = orderDto.Id,
+                TotalPrice = orderDto.TotalPrice,
+                CreatedOn = orderDto.CreatedOn,
+                UserId = orderDto.UserId
+            });
+            return Ok(orderDTOs);
         }
 
-        
-        [Authorize(Roles = "User,Admin")]
-        [HttpPost]
-        public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequestDto orderRequest)
+  
+        [Authorize(Roles = "User , Admin")]
+        [HttpGet("GetOrder/{Id}")]
+        public async Task<IActionResult> GetOrder(string Id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
+            var order = await _unitOfWork.Orders.GetByIdAsync(Id);
+            if (order == null)
             {
-                return Unauthorized("You must be logged in to perform this action.");
+                return NotFound();
             }
-
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
+            var orderDto = new GetOrderDto
             {
-                return Unauthorized("You must be logged in to perform this action.");
-            }
-            decimal totalPrice = 0;
-            var items= new List<Item>();
-            foreach (var itemId in orderRequest.ItemIds)
-            {
-                var item = await _unitOfWork.Items.GetByIdAsync(itemId);
-
-                if (item != null)
-                {
-                    totalPrice += item.FinalPrice;
-                }
-                items.Add(item);
-            }
-            orderRequest.TotalPrice = totalPrice;
-
-            var order = _mapper.Map<Order>(orderRequest);
-
-            var result = await _unitOfWork.Orders.AddAsync(order);
-            if (!result)
-            {
-                return BadRequest($"Failed to Create Order {order.Name}");
-            }
-            var saveCategoryItem = await _unitOfWork.SaveAndCommitChangesAsync();
-            if (!saveCategoryItem)
-            {
-                return BadRequest("failed to Save And Commit Order ");
-            }
-
-            var orderResponse = _mapper.Map<GetOrderResponseDto>(order);
-            return Ok(orderResponse);
+                Id = order.Id,
+                TotalPrice = order.TotalPrice,
+                IsCreated = order.IsCreated,
+                CreatedOn = order.CreatedOn,
+                UserId = order.UserId
+            };
+            return Ok(orderDto);
         }
 
-        [Authorize(Roles = "User,Admin")]
+        [Authorize(Roles = "User , Admin")]
+        [HttpPost("Create")]
+        public async Task<IActionResult> CreateOrder()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            // Get User Data
+            string username = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (username == null)
+            {
+                return Unauthorized();
+            }
+            ApplicationUser user = await _userManager.FindByNameAsync(username);
+
+            //Order Processing
+            var order = new Order();
+            order.Items = user.Cart.Items;
+            order.TotalPrice = user.Cart.TotalPrice;
+            order.ShipingAddress = user.Address;
+            order.IsCreated = true;
+            order.UserId = user.Id;
+
+            return Ok();
+        }
+
+        [Authorize(Roles = "Admin")]
         [HttpDelete("Delete/{Id}")]
-        public async Task<IActionResult> DeleteOrder(Guid Id)
+        public async Task<IActionResult> DeleteOrder(string Id)
         {
-            var Result = await _unitOfWork.Orders.DeleteAsync(Id);
-            if (!Result)
-                return NotFound("Order Not found");
-            Result = await _unitOfWork.SaveAndCommitChangesAsync();
-            if (!Result)
-                return BadRequest("Failed To Commit Order Deletion");
-            return NoContent();
+            var isIOrderDeleted = await _unitOfWork.Orders.DeleteAsync(Id);
+            if (!isIOrderDeleted)
+            {
+                return BadRequest();
+            }
+            var isChangesSaved = await _unitOfWork.SaveAndCommitChangesAsync();
+            if (!isChangesSaved)
+            {
+                return BadRequest();
+            }
+            return Ok();
         }
-
     }
 }

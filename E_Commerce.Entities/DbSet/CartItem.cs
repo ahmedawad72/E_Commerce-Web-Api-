@@ -10,19 +10,22 @@ namespace E_Commerce.Entities.DbSet
 {
     public class CartItem
     {
+        public CartItem()
+        {
+            this.TotalPrice = this.UnitPrice * Quantity;
+            //Cart = new Cart();
+            //Product = new Product();
+            //CartId = Cart.Id;
+            //ProductId = Product.Id;
+        }
         public decimal UnitPrice { get; set; }
         public decimal TotalPrice { get; set; }
         public int Quantity { get; set; }
 
-
-
-        public Guid CartId { get; set; }
-        [ForeignKey("CartId")]
+        public string CartId { get; set; }
         public virtual Cart Cart { get; set; }
-
-
-        public Guid ItemId { get; set; }
-        [ForeignKey("ItemId")]
-        public virtual Item Item { get; set; }
+    
+        public string ProductId { get; set; }
+        public virtual Product Product { get; set; }
     }
 }

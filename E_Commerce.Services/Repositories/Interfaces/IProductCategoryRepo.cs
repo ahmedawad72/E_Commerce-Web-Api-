@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace E_Commerce.Services.Repositories.Interfaces
 {
-    public interface ICategoryItemRepo:IGenericRepo<CategoryItem>
+    public interface IProductCategoryRepo:IGenericRepo<ProductCategory>
     {
     }
 }
